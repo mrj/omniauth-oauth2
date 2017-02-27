@@ -86,7 +86,10 @@ module OmniAuth
 
       def build_access_token
         verifier = request.params["code"]
-        client.auth_code.get_token(verifier, {:redirect_uri => callback_url}.merge(token_params.to_hash(:symbolize_keys => true)), deep_symbolize(options.auth_token_params))
+        callback_dangling_question_mark = callback_url[-1] == '?'
+        redirect_uri = callback_url.sub(/&?code=[^&]*/, '').sub(/&?state=[^&]*/, '')
+        redirect_uri.chomp!('?') unless callback_dangling_question_mark
+        client.auth_code.get_token(verifier, {:redirect_uri => redirect_uri}.merge(token_params.to_hash(:symbolize_keys => true)), deep_symbolize(options.auth_token_params))
       end
 
       def deep_symbolize(options)
